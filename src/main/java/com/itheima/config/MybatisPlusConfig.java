@@ -1,4 +1,4 @@
-package com.itheima.confi;
+package com.itheima.config;
 
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;

@@ -1,7 +1,9 @@
 package com.itheima.common;
 
 import com.aliyun.tea.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
  * 阿里云短信服务工具类
