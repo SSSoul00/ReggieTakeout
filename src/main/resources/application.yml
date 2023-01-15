@@ -1,0 +1,26 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: Reggie-takeout
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/reggie
+      username: root
+      password: "001121"
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: assign_id
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+reggie:
+  path: F:\BaiduNetdiskDownload\瑞吉外卖\1 瑞吉外卖项目\资料\图片资源\
+
+accessKeyId: LTAI5tJBTZNvjK2uFx4Dzs38
+accessKeySecret: vSCGfCLGxlbyHK3QqY0G2g4bC6EYH4
