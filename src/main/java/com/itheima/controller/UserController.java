@@ -7,6 +7,7 @@ import com.itheima.entity.User;
 import com.itheima.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
@@ -21,7 +23,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private RedisTemplate redisTemplate;
     /**
      * 发送验证码接口
      * @param user
@@ -38,8 +41,9 @@ public class UserController {
             log.info(code);
             //发送验证码
 //            SMSUtils.sendMessage(phone,code);
-            //将验证码保存
-            session.setAttribute(phone,code);
+            //将验证码缓存到redis
+            //session.setAttribute(phone,code);
+            redisTemplate.opsForValue().set(phone,code,5, TimeUnit.MINUTES);
             return R.success("短信发送成功");
         }
         return R.error("短信发送失败");
@@ -59,8 +63,9 @@ public class UserController {
         String phone = map.get("phone").toString();
         //获取验证码
         String code = map.get("code").toString();
-        //获取Session中验证码
-        String code2 = session.getAttribute(phone).toString();
+        //获取redis中验证码
+        //String code2 = session.getAttribute(phone).toString();
+        Object code2 = redisTemplate.opsForValue().get(phone);
         //比对验证码
         if (code2!=null&&code.equals(code2)){
             //如果通过
@@ -74,6 +79,8 @@ public class UserController {
                 userService.save(user);
             }
             session.setAttribute("user",user.getId());
+            //登陆成功删除缓存的验证码
+            redisTemplate.delete(phone);
             return R.success(user);
         }
         return R.error("用户不能存在");
