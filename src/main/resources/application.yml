@@ -11,10 +11,13 @@ spring:
       username: root
       password: "001121"
   redis:
-    host: 192.168.153.138
+    host: 192.168.153.139
     password: "001121"
     port: 6379
     database: 0
+  cache:
+    redis:
+      time-to-live: 1800000 #设置缓存过期时间
 
 mybatis-plus:
   global-config:
@@ -22,7 +25,7 @@ mybatis-plus:
       id-type: assign_id
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    map-underscore-to-camel-case: true
+    map-underscore-to-camel-case: true #配置MP驼峰映射
 
 reggie:
   path: F:\BaiduNetdiskDownload\瑞吉外卖\1 瑞吉外卖项目\资料\图片资源\

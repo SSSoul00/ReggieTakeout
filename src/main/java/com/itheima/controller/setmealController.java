@@ -12,6 +12,8 @@ import com.itheima.service.SetmealDishiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,7 @@ public class setmealController {
     private SetmealDishiService setmealDishiService;
     @Autowired
     private RedisTemplate redisTemplate;
+
     /**
      * 根据分类ID查找启用套餐
      *
@@ -41,20 +44,21 @@ public class setmealController {
      * @return
      */
     @GetMapping("/list")
+    @Cacheable(value = "setmealCache", key = "#categoryId +'_' +#status")
     public R<List<Setmeal>> getSetmeals(Long categoryId, Integer status) {
-        String key = "setmeal_" + categoryId + "_" + status;
+//        String key = "setmeal_" + categoryId + "_" + status;
         //从redis缓存中查找套餐数据，如果有直接return
-        List<Setmeal> setmealList = (List<Setmeal>) redisTemplate.opsForValue().get(key);
-        if (setmealList!=null){
-            return R.success(setmealList);
-        }
+//        List<Setmeal> setmealList = (List<Setmeal>) redisTemplate.opsForValue().get(key);
+//        if (setmealList!=null){
+//            return R.success(setmealList);
+//        }
         //如果没有从数据库中查询，存入redis缓存。
         LambdaQueryWrapper<Setmeal> qw = new LambdaQueryWrapper<>();
         qw.eq(status != null, Setmeal::getStatus, status)
                 .eq(categoryId != null, Setmeal::getCategoryId, categoryId)
                 .orderByDesc(Setmeal::getUpdateTime);
-        setmealList = setMealService.list(qw);
-        redisTemplate.opsForValue().set(key,setmealList,60, TimeUnit.MINUTES);
+        List<Setmeal> setmealList = setMealService.list(qw);
+//        redisTemplate.opsForValue().set(key,setmealList,60, TimeUnit.MINUTES);
         return R.success(setmealList);
     }
 
@@ -75,6 +79,7 @@ public class setmealController {
      * @return
      */
     @DeleteMapping
+    @CacheEvict(value = "setmealCache",allEntries = true)
     @Transactional
     public R<String> delete(long[] ids) {
         //定义数组用于存放无法删除的套餐名
@@ -123,10 +128,11 @@ public class setmealController {
      * @return
      */
     @PutMapping
+    @CacheEvict(value = "setmealCache", allEntries = true)
     public R<String> update(@RequestBody SetmealDto setmealDto) {
         //更新时清理redis缓存
-        String key = "setmeal_" + setmealDto.getCategoryId() + "_1";
-        redisTemplate.delete(key);
+//        String key = "setmeal_" + setmealDto.getCategoryId() + "_1";
+//        redisTemplate.delete(key);
         //修改套餐信息
         setMealService.updateById(setmealDto);
         //修改套餐关联菜品信息
@@ -204,10 +210,11 @@ public class setmealController {
      * @return
      */
     @PostMapping
+    @CacheEvict(value = "setmealCache",allEntries = true)
     public R<String> save(@RequestBody SetmealDto setmealDto) {
         //更新时清理redis缓存
-        String key = "setmeal_" + setmealDto.getCategoryId() + "_1";
-        redisTemplate.delete(key);
+//        String key = "setmeal_" + setmealDto.getCategoryId() + "_1";
+//        redisTemplate.delete(key);
         setMealService.saveWithDish(setmealDto);
         return R.success("添加套餐成功");
     }
